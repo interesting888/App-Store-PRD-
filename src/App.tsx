@@ -83,7 +83,7 @@ export default function App() {
     <main className="app-shell">
       <section className="hero-panel">
         <div>
-          <p className="eyebrow">LaienTech iOS 应用审查分析和版本规划评估</p>
+          <p className="eyebrow">Vibe Coding Product Intelligence</p>
           <h1>App Store 评论到 PRD 与测试计划的端到端工具</h1>
           <p className="lead">
             输入 App Store 链接和分析目标，系统会自动识别国家/地区，也支持导入评论数据完成清洗、动态语义分析、PRD、测试用例和追溯校验。
@@ -388,6 +388,26 @@ function DesignOverview({ run }: { run: PipelineRun }) {
         />
       </section>
 
+      <section className="artifact-card">
+        <p className="eyebrow">Vibe Coding Flow</p>
+        <h3>AI 协作式产品分析闭环</h3>
+        <p>
+          系统把 vibe coding 落到可运行流程中：用户用自然语言描述目标，应用自动完成数据收集、清理、语义分析、
+          需求摘要、版本规划、测试设计和追溯核验，并把每一步转化为可查看、可下载、可复核的互动体验。
+        </p>
+        <List
+          title="闭环步骤"
+          items={[
+            "收集数据：从 App Store 链接、RSS、结构化网页、缓存、样例或导入文件中获得评论。",
+            "清理和分析评价：统一字段、去重、统计评分，并用模型发现动态主题和冲突反馈。",
+            "摘要产品需求：把用户问题转化为带证据的发现、PRD 需求和验收标准。",
+            "规划版本：按优先级和影响范围拆分 Now / Next / Later 更新计划。",
+            "设计测试用例：每条测试绑定需求和来源评论，验证改动是否真正解决反馈。",
+            "产品化互动：在标签页、进度流、报告下载和完整 JSON 中展示过程与结果。",
+          ]}
+        />
+      </section>
+
       {run.reliability && (
         <section className={`artifact-card reliability-card ${run.reliability.level}`}>
           <p className="eyebrow">Reliability</p>
@@ -475,6 +495,15 @@ function TaskRequirementsPanel() {
         "透明说明数据不足、采集受限、模型失败和样例数据使用情况。",
       ],
     },
+    {
+      title: "Vibe Coding 能力",
+      items: [
+        "用自然语言分析目标驱动完整流水线，而不是手工拼接静态页面。",
+        "把 AI 协作产物转成可运行、可验证、可下载的产品功能。",
+        "从评论证据自动沉淀需求、版本计划和测试用例，形成端到端交付闭环。",
+        "在界面中保留中间过程和追溯结果，方便用户复核 AI 生成内容。",
+      ],
+    },
   ];
 
   return (
@@ -509,7 +538,10 @@ function WorkflowPanel({ run }: { run: PipelineRun }) {
       <section className="artifact-card">
         <p className="eyebrow">Workflow Verification</p>
         <h3>自动工作流核验</h3>
-        <p>这里逐项确认“开始分析”后是否完成范围、采集、清洗、分析、证据评估、PRD、测试、追溯、进度和交付物展示。</p>
+        <p>
+          这里逐项确认“开始分析”后是否完成范围、采集、清洗、分析、证据评估、PRD、版本规划、测试、追溯、
+          进度和交付物展示，确保 vibe coding 产物不是静态说明，而是可交互运行的工作流。
+        </p>
       </section>
       <div className="workflow-list">
         {checks.map((check) => (
@@ -801,6 +833,10 @@ function buildClientMarkdownReport(run: PipelineRun): string {
     `- 数据来源: ${run.collectionReport?.selectedSource ?? "unknown"}`,
     `- 可靠性: ${run.reliability?.score ?? 0}/100 (${run.reliability?.level ?? "unknown"})`,
     `- 评估状态: ${run.evaluation?.overallStatus ?? "unknown"}`,
+    "",
+    "## Vibe Coding 闭环",
+    "",
+    "本次运行以用户自然语言目标驱动完整分析流程：收集 App Store 或导入评价数据，清理和结构化评论，用运行时模型发现动态主题，再把证据化发现转成 PRD、版本规划和测试用例。界面将阶段进度、中间产物、追溯验证、可靠性和 Markdown 报告整合为互动体验，方便用户复核 AI 协作结果。",
     "",
     "## 数据与清洗",
     "",

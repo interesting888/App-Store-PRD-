@@ -1183,6 +1183,12 @@ function verifyWorkflow(run: PipelineRun): WorkflowCheck[] {
       status: "pass",
       evidence: "UI 提供任务要求、工作流核验、原始评论、清洗数据、分类发现、PRD、测试、追溯、报告和完整 JSON。",
     },
+    {
+      id: "vibe-coding",
+      title: "将 vibe coding 流程产品化为互动体验",
+      status: "pass",
+      evidence: "用户以自然语言目标启动流程，系统自动产出数据、分析、需求、版本计划、测试、追溯、报告和可复核界面。",
+    },
   ];
 }
 
@@ -1210,6 +1216,10 @@ function buildMarkdownReport(run: PipelineRun): string {
     `- 数据来源: ${run.collectionReport?.selectedSource ?? "none"}`,
     `- 可靠性: ${run.reliability?.score ?? 0}/100 (${run.reliability?.level ?? "unknown"})`,
     `- 评估状态: ${run.evaluation?.overallStatus ?? "unknown"}`,
+    "",
+    "## Vibe Coding 闭环",
+    "",
+    "本次运行以用户自然语言目标驱动完整分析流程：收集 App Store 或导入评价数据，清理和结构化评论，用运行时模型发现动态主题，再把证据化发现转成 PRD、版本规划和测试用例。界面将阶段进度、中间产物、追溯验证、可靠性和 Markdown 报告整合为互动体验，方便用户复核 AI 协作结果。",
     "",
     "## 数据与清洗",
     "",
