@@ -1,0 +1,97 @@
+{
+  "appId": "839285684",
+  "country": "us",
+  "sampleNotice": "Offline demo fixture for local review workflow verification. Replace with live US App Store collection or interviewer-provided JSON/CSV for formal evidence.",
+  "reviews": [
+    {
+      "id": "sample-us-001",
+      "rating": 1,
+      "title": "Hard to cancel",
+      "body": "I liked a few workouts but I could not figure out how to cancel the subscription from inside the app. It kept showing upgrade screens and I felt trapped.",
+      "version": "8.3.1",
+      "date": "2026-05-18T12:20:00Z",
+      "author": "Avery"
+    },
+    {
+      "id": "sample-us-002",
+      "rating": 2,
+      "title": "Too many subscription prompts",
+      "body": "The exercises are fine, but almost every screen pushes premium. I wanted to try a beginner plan before paying.",
+      "version": "8.3.1",
+      "date": "2026-05-20T09:11:00Z",
+      "author": "HomeGymUser"
+    },
+    {
+      "id": "sample-us-003",
+      "rating": 5,
+      "title": "Great short workouts",
+      "body": "The seven minute routines are easy to follow and perfect when I only have a small window before work.",
+      "version": "8.3.1",
+      "date": "2026-05-21T15:01:00Z",
+      "author": "Mia"
+    },
+    {
+      "id": "sample-us-004",
+      "rating": 2,
+      "title": "Audio timing is off",
+      "body": "The coach voice sometimes announces the next move after the timer already changed. It makes the workout confusing.",
+      "version": "8.3.0",
+      "date": "2026-04-30T08:45:00Z",
+      "author": "RunnerMom"
+    },
+    {
+      "id": "sample-us-005",
+      "rating": 3,
+      "title": "Needs better modifications",
+      "body": "I need low impact alternatives for knee pain. Some workouts show jumping moves without an obvious substitute.",
+      "version": "8.3.1",
+      "date": "2026-05-22T18:34:00Z",
+      "author": "Jess"
+    },
+    {
+      "id": "sample-us-006",
+      "rating": 1,
+      "title": "Progress disappeared",
+      "body": "After the last update my completed days reset to zero. I lost my streak and do not trust the tracker now.",
+      "version": "8.3.1",
+      "date": "2026-05-23T10:12:00Z",
+      "author": "FitAgain"
+    },
+    {
+      "id": "sample-us-007",
+      "rating": 4,
+      "title": "Good plans but reminders are noisy",
+      "body": "The plan helped me keep a routine, but notification reminders come too often and I could not tune them by day.",
+      "version": "8.2.9",
+      "date": "2026-04-12T19:40:00Z",
+      "author": "Lena"
+    },
+    {
+      "id": "sample-us-008",
+      "rating": 2,
+      "title": "Beginner level is not beginner",
+      "body": "The first workout had burpees and mountain climbers. For a beginner plan it felt intimidating and I quit halfway.",
+      "version": "8.3.1",
+      "date": "2026-05-24T06:55:00Z",
+      "author": "NewStarter"
+    },
+    {
+      "id": "sample-us-009",
+      "rating": 5,
+      "title": "Easy to use",
+      "body": "I like that I can start quickly and see each move. The animations are clear and the workouts fit at home.",
+      "version": "8.3.0",
+      "date": "2026-04-25T11:17:00Z",
+      "author": "Sam"
+    },
+    {
+      "id": "sample-us-010",
+      "rating": 1,
+      "title": "Charged unexpectedly",
+      "body": "I thought I was starting a free trial but I was charged. The trial and renewal language needs to be much clearer.",
+      "version": "8.3.1",
+      "date": "2026-05-25T14:22:00Z",
+      "author": "TrialUser"
+    }
+  ]
+}
