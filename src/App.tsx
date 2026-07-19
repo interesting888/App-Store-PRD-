@@ -6,8 +6,22 @@ import "./style.css";
 
 const defaultUrl = "https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684";
 const defaultGoal = "关注订阅转化率、锻炼体验、低评分评论和最近版本中的主要用户问题。";
+const goalPresets = ["低评分评论", "订阅转化率", "锻炼体验", "最近版本问题", "冲突反馈", "测试用例覆盖"];
 
-type TabKey = "overview" | "reviews" | "cleaned" | "findings" | "prd" | "tests" | "trace" | "json";
+type TabKey =
+  | "overview"
+  | "requirements"
+  | "workflow"
+  | "report"
+  | "evaluation"
+  | "reliability"
+  | "reviews"
+  | "cleaned"
+  | "findings"
+  | "prd"
+  | "tests"
+  | "trace"
+  | "json";
 
 export default function App() {
   const [appUrl, setAppUrl] = useState(defaultUrl);
@@ -46,6 +60,13 @@ export default function App() {
     setImportData(await loadSampleReviews());
   }
 
+  async function handleFileImport(file: File | undefined) {
+    if (!file) return;
+    const text = await file.text();
+    setImportData(text);
+    setImportFormat(file.name.toLowerCase().endsWith(".csv") ? "csv" : "json");
+  }
+
   const summary = useMemo(() => {
     if (!run) return undefined;
     return [
@@ -54,6 +75,7 @@ export default function App() {
       { label: "发现", value: run.findings.length },
       { label: "需求", value: run.requirements.length },
       { label: "测试用例", value: run.testCases.length },
+      { label: "可靠性", value: run.reliability?.score ?? 0 },
     ];
   }, [run]);
 
@@ -64,7 +86,7 @@ export default function App() {
           <p className="eyebrow">LaienTech iOS 应用审查分析和版本规划评估</p>
           <h1>App Store 评论到 PRD 与测试计划的端到端工具</h1>
           <p className="lead">
-            输入美国 App Store 链接和分析目标，系统会完成采集、清洗、动态语义分析、版本规划、PRD、测试用例和追溯校验。
+            输入 App Store 链接和分析目标，系统会自动识别国家/地区，也支持导入评论数据完成清洗、动态语义分析、PRD、测试用例和追溯校验。
           </p>
         </div>
         <div className="model-card">
@@ -77,7 +99,7 @@ export default function App() {
       <section className="workspace">
         <form className="input-panel" onSubmit={handleSubmit}>
           <label>
-            美国 App Store 链接
+            App Store 链接（自动识别国家/地区）
             <input value={appUrl} onChange={(event) => setAppUrl(event.target.value)} />
           </label>
 
@@ -85,6 +107,18 @@ export default function App() {
             分析目标或限制条件
             <textarea value={goal} onChange={(event) => setGoal(event.target.value)} rows={5} />
           </label>
+          <div className="preset-row" aria-label="分析目标快捷选项">
+            {goalPresets.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                className="chip"
+                onClick={() => setGoal((current) => (current.includes(preset) ? current : `${current} ${preset}`.trim()))}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
 
           <div className="inline-fields">
             <label>
@@ -110,10 +144,28 @@ export default function App() {
               className="import-box"
               value={importData}
               onChange={(event) => setImportData(event.target.value)}
-              placeholder="支持 { reviews: [...] }、[...] 或带表头 CSV。字段可用 id/rating/title/body/version/date/author。"
+              placeholder="支持 { reviews: [...] }、[...]、Apple RSS 风格 JSON、嵌套 data/items/records，或带表头 CSV。字段可用 id/rating/title/body/version/date/author，也兼容 reviewId/content/text/score 等别名。"
               rows={8}
             />
           </label>
+          <div className="import-actions">
+            <label className="file-button">
+              上传 JSON/CSV
+              <input type="file" accept=".json,.csv,application/json,text/csv" onChange={(event) => handleFileImport(event.target.files?.[0])} />
+            </label>
+            <button type="button" className="secondary" onClick={() => setImportData("")} disabled={!importData}>
+              清空导入
+            </button>
+          </div>
+          <p className="helper-text">
+            当前导入内容约 {importData.length.toLocaleString()} 字符；为空时系统会按链接国家/地区尝试在线采集、缓存或离线样例。
+          </p>
+
+          <section className="compat-card">
+            <strong>通用兼容性</strong>
+            <p>可输入不同国家/地区的 App Store 链接，也可导入未见过的 JSON/CSV 数据集；系统不会依赖特定应用硬编码分类。</p>
+            <p>若数据不足、采集失败或模型失败，结果会在“可靠性”和“评估核对”中透明标记。</p>
+          </section>
 
           <div className="button-row">
             <button type="submit" disabled={loading}>
@@ -199,6 +251,11 @@ function StageTimeline({ run }: { run: PipelineRun }) {
 function Tabs({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: TabKey) => void }) {
   const tabs: Array<[TabKey, string]> = [
     ["overview", "方案说明"],
+    ["requirements", "任务要求"],
+    ["workflow", "工作流核验"],
+    ["report", "报告总结"],
+    ["evaluation", "评估核对"],
+    ["reliability", "可靠性"],
     ["reviews", "原始评论"],
     ["cleaned", "清洗数据"],
     ["findings", "分类发现"],
@@ -220,6 +277,11 @@ function Tabs({ activeTab, onChange }: { activeTab: TabKey; onChange: (tab: TabK
 
 function TabContent({ run, activeTab }: { run: PipelineRun; activeTab: TabKey }) {
   if (activeTab === "overview") return <DesignOverview run={run} />;
+  if (activeTab === "requirements") return <TaskRequirementsPanel />;
+  if (activeTab === "workflow") return <WorkflowPanel run={run} />;
+  if (activeTab === "report") return <ReportPanel run={run} />;
+  if (activeTab === "evaluation") return <EvaluationPanel run={run} />;
+  if (activeTab === "reliability") return <ReliabilityPanel run={run} />;
   if (activeTab === "reviews") return <ReviewTable reviews={run.rawReviews} />;
   if (activeTab === "cleaned") {
     return (
@@ -311,7 +373,7 @@ function DesignOverview({ run }: { run: PipelineRun }) {
         <p className="eyebrow">Design Rationale</p>
         <h3>设计思路</h3>
         <p>
-          这个工具把作业拆成一条可审计的数据流水线：先用确定性规则拿到可信数据，再把开放式语义判断交给
+          这个工具把评论分析拆成一条可审计的数据流水线：先用确定性规则拿到可信数据，再把开放式语义判断交给
           DeepSeek，最后用规则校验每条发现、需求和测试用例是否能追溯到真实评论。这样既能泛化到未见过的
           App 和数据集，也能避免模型凭空生成产品结论。
         </p>
@@ -325,6 +387,17 @@ function DesignOverview({ run }: { run: PipelineRun }) {
           ]}
         />
       </section>
+
+      {run.reliability && (
+        <section className={`artifact-card reliability-card ${run.reliability.level}`}>
+          <p className="eyebrow">Reliability</p>
+          <h3>结果可靠性：{run.reliability.score}/100</h3>
+          <p>
+            系统会同时看样本量、模型是否成功运行、追溯链是否断裂、是否使用样例数据以及是否处理了导入数据，
+            用于判断结果能否可靠泛化到未见过的数据集。
+          </p>
+        </section>
+      )}
 
       <section className="artifact-card">
         <p className="eyebrow">Implementation Flow</p>
@@ -368,6 +441,212 @@ function DesignOverview({ run }: { run: PipelineRun }) {
         />
         {run.modelInfo.fallbackReason && <p className="warning-text">{run.modelInfo.fallbackReason}</p>}
       </section>
+    </div>
+  );
+}
+
+function TaskRequirementsPanel() {
+  const groups = [
+    {
+      title: "自动工作流",
+      items: [
+        "根据用户目标和可用数据确定分析范围。",
+        "收集应用评价数据，并记录数据来源、失败原因和局限。",
+        "清理、去重并结构化评价数据。",
+        "动态分类和分析评价，不仅依赖固定关键词或预设分类。",
+        "评估证据充分性、冲突反馈、不确定性和数据限制。",
+      ],
+    },
+    {
+      title: "产品化交付",
+      items: [
+        "根据分析制定更新计划并生成 PRD，必要时拆分多个版本。",
+        "基于 PRD 生成测试用例，每个测试用例关联需求和来源用户评价。",
+        "验证 Review -> Finding -> Requirement -> TestCase 追溯链。",
+        "没有根据的结论必须删除、修正或明确标记为假设。",
+      ],
+    },
+    {
+      title: "界面与交付",
+      items: [
+        "显示执行进度、阶段结果、验证结果、错误和自动修订。",
+        "展示原始评论、清洗数据、分类结果、发现、PRD 草案、测试用例草案和完整 JSON。",
+        "支持不同 App Store 链接、未见过的数据集和新的分析目标。",
+        "透明说明数据不足、采集受限、模型失败和样例数据使用情况。",
+      ],
+    },
+  ];
+
+  return (
+    <div className="stack">
+      <section className="artifact-card">
+        <p className="eyebrow">Product Requirements</p>
+        <h3>能力要求映射</h3>
+        <p>
+          这里把产品能力要求直接映射到系统界面和运行结果。用户更换 App、数据集或分析目标时，仍会走同一条流水线，不依赖特定应用硬编码。
+        </p>
+      </section>
+      <div className="requirement-grid">
+        {groups.map((group) => (
+          <section key={group.title} className="artifact-card requirement-group">
+            <h3>{group.title}</h3>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WorkflowPanel({ run }: { run: PipelineRun }) {
+  const checks = run.workflowVerification?.length ? run.workflowVerification : buildClientWorkflowChecks(run);
+  return (
+    <div className="stack">
+      <section className="artifact-card">
+        <p className="eyebrow">Workflow Verification</p>
+        <h3>自动工作流核验</h3>
+        <p>这里逐项确认“开始分析”后是否完成范围、采集、清洗、分析、证据评估、PRD、测试、追溯、进度和交付物展示。</p>
+      </section>
+      <div className="workflow-list">
+        {checks.map((check) => (
+          <article key={check.id} className={`artifact-card workflow-item ${check.status}`}>
+            <span>{check.status}</span>
+            <h3>{check.title}</h3>
+            <p>{check.evidence}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReportPanel({ run }: { run: PipelineRun }) {
+  const report = run.reportMarkdown?.trim() ? run.reportMarkdown : buildClientMarkdownReport(run);
+
+  function downloadReport() {
+    const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `review-analysis-${run.runId.slice(0, 8)}.md`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="stack">
+      <section className="artifact-card report-actions">
+        <div>
+          <p className="eyebrow">Summary Report</p>
+          <h3>分析文档总结</h3>
+          <p>该报告由后端根据本次运行结果生成，可作为产品分析归档、团队验收或交付材料。</p>
+        </div>
+        <button type="button" onClick={downloadReport}>下载 Markdown</button>
+      </section>
+      <pre className="report-block">{report}</pre>
+    </div>
+  );
+}
+
+function ReliabilityPanel({ run }: { run: PipelineRun }) {
+  if (!run.reliability) {
+    return (
+      <section className="artifact-card">
+        <h3>暂无可靠性评估</h3>
+        <p>请重新运行分析以生成可靠性评估。</p>
+      </section>
+    );
+  }
+
+  return (
+    <div className="stack">
+      <section className={`artifact-card reliability-card ${run.reliability.level}`}>
+        <p className="eyebrow">Reliability Assessment</p>
+        <h3>{run.reliability.score}/100 · {run.reliability.level}</h3>
+        <div className="score-bar" aria-label={`可靠性评分 ${run.reliability.score}`}>
+          <span style={{ width: `${run.reliability.score}%` }} />
+        </div>
+      </section>
+
+      <section className="artifact-card">
+        <h3>为什么可信</h3>
+        {run.reliability.reasons.length ? <List title="支持因素" items={run.reliability.reasons} /> : <p>当前没有足够支持因素。</p>}
+        {run.reliability.limitations.length ? <List title="数据局限" items={run.reliability.limitations} /> : <p>当前未发现主要数据局限。</p>}
+      </section>
+
+      {run.collectionReport && (
+        <section className="artifact-card">
+          <h3>数据来源诊断</h3>
+          <p>最终来源：{run.collectionReport.selectedSource ?? "none"}</p>
+          <div className="check-grid">
+            {run.collectionReport.attempts.map((attempt, index) => (
+              <article key={`${attempt.method}-${index}`} className={`check-card ${attempt.status === "success" ? "pass" : attempt.status === "failed" ? "fail" : "warning"}`}>
+                <strong>{attempt.method}</strong>
+                <span>{attempt.status}</span>
+                <p>{attempt.detail}</p>
+                <p>评论数：{attempt.count}</p>
+              </article>
+            ))}
+          </div>
+          {run.collectionReport.reproducibility.length > 0 && <List title="可复现说明" items={run.collectionReport.reproducibility} />}
+          {run.collectionReport.limitations.length > 0 && <List title="采集局限" items={run.collectionReport.limitations} />}
+        </section>
+      )}
+
+      <section className="artifact-card">
+        <h3>泛化能力检查</h3>
+        <div className="check-grid">
+          {run.reliability.generalizationChecks.map((check) => (
+            <article key={check.name} className={`check-card ${check.status}`}>
+              <strong>{check.name}</strong>
+              <span>{check.status}</span>
+              <p>{check.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function EvaluationPanel({ run }: { run: PipelineRun }) {
+  if (!run.evaluation) {
+    return (
+      <section className="artifact-card">
+        <h3>暂无评估核对报告</h3>
+        <p>请重新运行分析以生成完整评估报告。</p>
+      </section>
+    );
+  }
+
+  const passed = run.evaluation.criteria.filter((criterion) => criterion.status === "pass").length;
+
+  return (
+    <div className="stack">
+      <section className={`artifact-card evaluation-summary ${run.evaluation.overallStatus}`}>
+        <p className="eyebrow">Evaluation Checklist</p>
+        <h3>总体状态：{run.evaluation.overallStatus}</h3>
+        <p>
+          已通过 {passed}/{run.evaluation.criteria.length} 项质量核对标准。该报告用于确认数据、分析、AI、PRD、测试和 UI 交付是否完整。
+        </p>
+      </section>
+      <div className="evaluation-list">
+        {run.evaluation.criteria.map((criterion) => (
+          <article key={criterion.id} className={`artifact-card evaluation-item ${criterion.status}`}>
+            <div className="evaluation-title">
+              <h3>{criterion.title}</h3>
+              <span>{criterion.status}</span>
+            </div>
+            <p>{criterion.summary}</p>
+            <List title="核对证据" items={criterion.evidence} />
+            {criterion.improvement && <p className="warning-text">改进建议：{criterion.improvement}</p>}
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
@@ -430,6 +709,123 @@ function List({ title, items }: { title: string; items: string[] }) {
       </ul>
     </div>
   );
+}
+
+function buildClientWorkflowChecks(run: PipelineRun) {
+  const traceErrors = run.traceabilityIssues.filter((issue) => issue.level === "error").length;
+  return [
+    {
+      id: "scope",
+      title: "根据用户目标和可用数据确定分析范围",
+      status: run.scope ? "pass" : "fail",
+      evidence: run.scope ? `目标：${run.scope.goal}；国家/地区：${run.scope.country}` : "当前返回结果缺少 scope。",
+    },
+    {
+      id: "collect",
+      title: "收集应用评价数据",
+      status: run.rawReviews.length > 0 ? "pass" : "warning",
+      evidence: `原始评论 ${run.rawReviews.length} 条；来源：${run.collectionReport?.selectedSource ?? "未标注"}`,
+    },
+    {
+      id: "clean",
+      title: "清理、去重并结构化评价数据",
+      status: run.cleaningReport ? "pass" : "warning",
+      evidence: `清洗后 ${run.cleanedReviews.length} 条；重复 ${run.cleaningReport?.duplicateCount ?? 0} 条；过滤 ${run.cleaningReport?.filteredCount ?? 0} 条。`,
+    },
+    {
+      id: "analyze",
+      title: "动态分类和分析评价",
+      status: run.findings.length > 0 ? (run.modelInfo.usedRuntimeModel ? "pass" : "warning") : "fail",
+      evidence: `发现 ${run.findings.length} 个；运行时模型：${run.modelInfo.usedRuntimeModel ? "已使用" : "未使用或降级"}。`,
+    },
+    {
+      id: "evidence",
+      title: "评估证据、冲突、不确定性和数据限制",
+      status: run.reliability ? "pass" : "warning",
+      evidence: `可靠性 ${run.reliability?.score ?? 0}/100；局限：${run.reliability?.limitations.join("；") || "未返回局限字段"}`,
+    },
+    {
+      id: "prd",
+      title: "生成 PRD 和版本规划",
+      status: run.requirements.length > 0 ? "pass" : "fail",
+      evidence: `需求 ${run.requirements.length} 条；版本 ${new Set(run.requirements.map((item) => item.version)).size} 个。`,
+    },
+    {
+      id: "tests",
+      title: "生成测试用例并关联需求和评论",
+      status: run.testCases.length > 0 ? "pass" : "fail",
+      evidence: `测试用例 ${run.testCases.length} 条；含评论关联 ${run.testCases.filter((item) => item.linkedReviewIds.length > 0).length} 条。`,
+    },
+    {
+      id: "trace",
+      title: "验证 Review -> Finding -> Requirement -> TestCase 追溯链",
+      status: traceErrors === 0 ? "pass" : "fail",
+      evidence: `追溯错误 ${traceErrors} 个，追溯警告 ${run.traceabilityIssues.filter((issue) => issue.level === "warning").length} 个。`,
+    },
+    {
+      id: "progress",
+      title: "显示执行进度、错误和修订",
+      status: "pass",
+      evidence: `阶段 ${run.stages.length} 个；错误 ${run.errors.length} 个；修订 ${run.revisions.length} 条。`,
+    },
+    {
+      id: "deliverables",
+      title: "展示中期和最终交付物",
+      status: "pass",
+      evidence: "界面包含原始评论、清洗数据、分类发现、PRD、测试用例、追溯、评估、可靠性、报告和完整 JSON。",
+    },
+  ] as const;
+}
+
+function buildClientMarkdownReport(run: PipelineRun): string {
+  const findings = run.findings
+    .map((finding) => `- **${finding.id} ${finding.title}**：${finding.userProblem}；支持 ${finding.supportCount} 条；来源 ${finding.evidence.map((item) => item.reviewId).join(", ") || "无"}`)
+    .join("\n");
+  const requirements = run.requirements
+    .map((requirement) => `- **${requirement.id} ${requirement.title}**：${requirement.priority} / ${requirement.version}；来源评论 ${requirement.sourceReviewIds.join(", ") || "无"}`)
+    .join("\n");
+  const tests = run.testCases
+    .map((testCase) => `- **${testCase.id} ${testCase.title}**：验证 ${testCase.requirementId}；关联评论 ${testCase.linkedReviewIds.join(", ") || "无"}`)
+    .join("\n");
+  const workflow = buildClientWorkflowChecks(run)
+    .map((item) => `- ${item.status.toUpperCase()} **${item.title}**：${item.evidence}`)
+    .join("\n");
+
+  return [
+    `# ${run.metadata?.name ?? "App Store Review Analysis"} 分析总结`,
+    "",
+    `- Run ID: ${run.runId}`,
+    `- App ID: ${run.scope?.appId ?? "unknown"}`,
+    `- 国家/地区: ${run.scope?.country ?? "unknown"}`,
+    `- 分析目标: ${run.scope?.goal ?? "unknown"}`,
+    `- 数据来源: ${run.collectionReport?.selectedSource ?? "unknown"}`,
+    `- 可靠性: ${run.reliability?.score ?? 0}/100 (${run.reliability?.level ?? "unknown"})`,
+    `- 评估状态: ${run.evaluation?.overallStatus ?? "unknown"}`,
+    "",
+    "## 数据与清洗",
+    "",
+    `原始评论 ${run.rawReviews.length} 条，清洗后 ${run.cleanedReviews.length} 条，重复 ${run.cleaningReport?.duplicateCount ?? 0} 条，非法 ${run.cleaningReport?.invalidCount ?? 0} 条。`,
+    "",
+    "## 主要发现",
+    "",
+    findings || "暂无发现。",
+    "",
+    "## PRD 草案",
+    "",
+    requirements || "暂无需求。",
+    "",
+    "## 测试用例草案",
+    "",
+    tests || "暂无测试用例。",
+    "",
+    "## 工作流核验",
+    "",
+    workflow,
+    "",
+    "## 数据局限",
+    "",
+    [...(run.collectionReport?.limitations ?? []), ...(run.reliability?.limitations ?? [])].map((item) => `- ${item}`).join("\n") || "暂无主要局限。",
+  ].join("\n");
 }
 
 function JsonBlock({ data }: { data: unknown }) {

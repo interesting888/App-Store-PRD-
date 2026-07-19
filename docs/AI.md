@@ -56,6 +56,9 @@ Do not invent facts. Mark uncertainty when evidence is limited or conflicting.
 5. **追溯链验证**：Requirement 和 TestCase 必须继承真实评论 ID。
 6. **结论类型标注**：`evidenceType` 区分 `mixed`、`deterministic_stat`、`hypothesis`。
 7. **降级透明**：模型失败时使用规则分桶结果，并在 UI、JSON 和验证结果中标注“未使用运行时模型”。
+8. **运行时校验**：评估核对会把未成功调用模型标为失败项，明确说明系统需要运行时模型参与语义分析。
+9. **兼容重试**：如果兼容接口不接受 `response_format`，服务端会重试一次纯提示词 JSON 模式。
+10. **超时保护**：模型请求默认 45 秒超时，避免界面长时间无响应。
 
 ## 故障处理
 
@@ -63,6 +66,7 @@ Do not invent facts. Mark uncertainty when evidence is limited or conflicting.
 
 - 缺少 `LLM_API_KEY`
 - API 超时或返回非 2xx
+- 兼容接口不支持 `response_format`
 - 模型未返回 JSON
 - 模型返回无效 review id
 
@@ -71,7 +75,7 @@ Do not invent facts. Mark uncertainty when evidence is limited or conflicting.
 - 不伪造模型结论
 - 记录 `modelInfo.fallbackReason`
 - 生成可审计的规则降级分析
-- 追溯校验增加 warning，提示正式评估需配置模型后重跑
+- 可靠性和评估核对增加 warning/fail，提示正式评估需配置模型后重跑
 
 ## 为什么规则和模型混合
 

@@ -13,9 +13,9 @@ dist-ssr
 data/cache
 data/runs
 *.local
-.env
 .env.*
 !.env.example
+!.env
 
 # Editor directories and files
 .vscode/*

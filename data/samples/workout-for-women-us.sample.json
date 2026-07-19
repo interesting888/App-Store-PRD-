@@ -1,7 +1,7 @@
 {
   "appId": "839285684",
   "country": "us",
-  "sampleNotice": "Offline demo fixture for local review workflow verification. Replace with live US App Store collection or interviewer-provided JSON/CSV for formal evidence.",
+  "sampleNotice": "Offline demo fixture for local review workflow verification. Replace with live App Store collection or user-provided JSON/CSV for formal evidence.",
   "reviews": [
     {
       "id": "sample-us-001",

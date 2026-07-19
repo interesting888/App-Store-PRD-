@@ -28,7 +28,7 @@ export interface Review {
 
 export interface AnalysisScope {
   appId: string;
-  country: "us";
+  country: string;
   goal: string;
   ratingFilter?: number[];
   versionFilter?: string;
@@ -44,6 +44,20 @@ export interface CleaningReport {
   filteredCount: number;
   ratingDistribution: Record<string, number>;
   versionDistribution: Record<string, number>;
+}
+
+export interface CollectionAttempt {
+  method: "import" | "rss" | "web-structured-data" | "cache" | "sample";
+  status: "success" | "empty" | "failed" | "skipped";
+  detail: string;
+  count: number;
+}
+
+export interface CollectionReport {
+  selectedSource?: ReviewSource;
+  attempts: CollectionAttempt[];
+  limitations: string[];
+  reproducibility: string[];
 }
 
 export interface EvidenceSample {
@@ -96,6 +110,54 @@ export interface TraceabilityIssue {
   objectId: string;
 }
 
+export interface ReliabilityAssessment {
+  score: number;
+  level: "high" | "medium" | "low";
+  reasons: string[];
+  limitations: string[];
+  generalizationChecks: Array<{
+    name: string;
+    status: "pass" | "warning" | "fail";
+    detail: string;
+  }>;
+}
+
+export interface EvaluationCriterion {
+  id: string;
+  title: string;
+  status: "pass" | "warning" | "fail";
+  summary: string;
+  evidence: string[];
+  improvement?: string;
+}
+
+export interface DeliveryEvaluation {
+  overallStatus: "pass" | "warning" | "fail";
+  criteria: EvaluationCriterion[];
+}
+
+export interface ChartSeries {
+  title: string;
+  type: "bar" | "metric";
+  data: Array<{
+    label: string;
+    value: number;
+    detail?: string;
+  }>;
+}
+
+export interface VisualizationReport {
+  charts: ChartSeries[];
+  highlights: string[];
+}
+
+export interface WorkflowCheck {
+  id: string;
+  title: string;
+  status: "pass" | "warning" | "fail";
+  evidence: string;
+}
+
 export interface PipelineStage {
   id: string;
   label: string;
@@ -119,14 +181,22 @@ export interface PipelineRun {
   requirements: Requirement[];
   testCases: TestCase[];
   traceabilityIssues: TraceabilityIssue[];
+  reliability?: ReliabilityAssessment;
+  evaluation?: DeliveryEvaluation;
+  visualization?: VisualizationReport;
+  workflowVerification?: WorkflowCheck[];
+  reportMarkdown?: string;
   revisions: string[];
   errors: string[];
   modelInfo: {
     provider: string;
     model: string;
     usedRuntimeModel: boolean;
+    semanticTask: string;
+    promptPolicy: string;
     fallbackReason?: string;
   };
+  collectionReport?: CollectionReport;
 }
 
 export interface AnalyzeRequest {
